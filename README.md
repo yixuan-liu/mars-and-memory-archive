@@ -1,6 +1,6 @@
-# Mars Memory Archive 🚀
+# Mars and Memory Archive 🚀
 
-`Mars Memory Archive` is a knowledge archive management system for militaria (historical military gear) identification and research, built on **RAG (Retrieval-Augmented Generation)** technology.
+`Mars and Memory Archive` is a knowledge archive management system for militaria (historical military gear) identification and research, built on **RAG (Retrieval-Augmented Generation)** technology.
 
 The system utilizes a rich-text editor (TipTap) as the authoritative storage format, extracts and chunks text, and leverages OpenAI and the Qdrant vector database to achieve high-precision semantic search, AI Q&A with source citations, and document deduplication.
 
