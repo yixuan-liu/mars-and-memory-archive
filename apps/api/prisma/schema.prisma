@@ -1,0 +1,55 @@
+// This is your Prisma schema file for @mars-memory-archive/api
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SourceType {
+  DOCUMENT
+  FILE
+}
+
+model Document {
+  id          String            @id @default(cuid())
+  title       String
+  contentJson Json              // Tiptap JSON 结构（唯一权威存储格式，非 HTML/Markdown）
+  indexedAt   DateTime?         // 入库时间；null 表示文献尚未入库
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  sources     KnowledgeSource[]
+
+  @@map("documents")
+}
+
+model KnowledgeSource {
+  id         String           @id @default(cuid())
+  type       SourceType                           // DOCUMENT | FILE
+  title      String                               // 来源标题
+  documentId String?                              // 关联文档，可为空（FILE 类型时）
+  document   Document?        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  fileName   String?                              // 上传文件名（FILE 类型时使用）
+  checksum   String           @unique             // SHA-256 去重；相同内容避免重复入库
+  createdAt  DateTime         @default(now())
+  chunks     KnowledgeChunk[]
+
+  @@map("knowledge_sources")
+}
+
+model KnowledgeChunk {
+  id            String          @id @default(cuid())
+  sourceId      String
+  source        KnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  chunkIndex    Int             // 片段序号（从 0 开始）
+  text          String          // 分块文本（原始内容，PostgreSQL 持久化；Qdrant 只存向量和 ID）
+  vectorPointId String          @unique  // Qdrant 向量点 ID（与向量库解耦：PG 为主存储，Qdrant 为索引）
+  metadata      Json            // 标题、文档 ID 等元信息（供 RAG 召回时快速返回引用卡片使用）
+  createdAt     DateTime        @default(now())
+
+  @@map("knowledge_chunks")
+}
